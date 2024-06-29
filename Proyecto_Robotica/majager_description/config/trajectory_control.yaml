@@ -1,0 +1,22 @@
+majager:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+
+  majager_joint_controller:
+    type: "position_controllers/JointTrajectoryController"
+    joints:
+      - Base_to_Link1
+      - Link1_to_Link2
+      - Link2_to_Link3
+      - Link3_to_Link4
+      - Link4_to_Link5
+      - Link5_to_Link6
+      - Link6_to_Base_Gripper
+  gripper_controller:
+    type: "position_controllers/JointTrajectoryController"
+    joints:
+      - Base_Gripper_to_Gripper_Right
+      - Base_Gripper_to_Gripper_Left
+
