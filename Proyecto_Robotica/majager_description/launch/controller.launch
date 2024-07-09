@@ -1,9 +1,0 @@
-<launch>
-
-<rosparam file="$(find majager_description)/launch/controller.yaml" command="load"/>
-<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="majager" args="Base_to_Link1_position_controller Link1_to_Link2_position_controller Link2_to_Link3_position_controller Link3_to_Link4_position_controller Link4_to_Link5_position_controller Link5_to_Link6_position_controller Link6_to_Base_Gripper_position_controller Base_Gripper_to_Gripper_Right_position_controller Base_Gripper_to_Gripper_Left_position_controller joint_state_controller "/>
-<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
-  <remap from="/joint_states" to="/majager/joint_states"/>
-</node>
-
-</launch>
