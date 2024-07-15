@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+      
+  <!-- Load joint controllers -->
+  <rosparam file="$(find majager_description)/config/trajectory_control.yaml" command="load" />
+  
+  <!-- Joint Controllers -->
+  <node name="majager_controller_spawner" pkg="controller_manager" type="spawner"
+        respawn="false" output="screen" ns="/majager"
+        args="majager_joint_controller
+              gripper_controller"/>
+
+  <node name="joint_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" 
+        output="screen" ns="/majager" args="joint_state_controller"/>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+        respawn ="false" output="screen" >
+    <remap from="/joint_states" to="/majager/joint_states" />
+  </node>
+
+  <rosparam file="$(find majager_description)/config/gazebo_ros_control_params.yaml" command="load"/>
+</launch>

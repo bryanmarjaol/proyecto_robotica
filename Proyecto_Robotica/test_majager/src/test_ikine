@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+import rospy
+from sensor_msgs.msg import JointState
+from markers import *
+from functions import *
+
+def signal_handler(sig, frame):
+    print('\nCtrl+C presionado. Ejecutando código de limpieza...')
+    # Impresion del error
+    plt.plot(err, 'r')
+    plt.plot(err, 'b.')
+    plt.title("Evolución del error - Método de Newton\nIteraciones: " + str(it)+" - Epsilon: "+str(eps))
+    plt.grid()
+    plt.xlabel("Número de iteraciones")
+    plt.ylabel("Norma del error")
+    plt.show()
+    sys.exit(0)
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal_handler)
+    rospy.init_node("testInvKine")
+    pub = rospy.Publisher('joint_states', JointState, queue_size=1)
+
+    bmarker      = BallMarker(color['RED'])
+    bmarker_des  = BallMarker(color['GREEN'])
+
+    # Joint names
+    jnames = ['Base_to_Link1', 'Link1_to_Link2', 'Link2_to_Link3', 'Link3_to_Link4', 'Link4_to_Link5', 'Link5_to_Link6',
+              'Link6_to_Base_Gripper', 'Base_Gripper_to_Gripper_Right', 'Base_Gripper_to_Gripper_Left']
+
+    # Desired position
+    xd = np.array([-1.4, -1.2, 0.5])
+    # Initial configuration
+    q0 = np.array([0.0, -1.0, 1.7, -2.2, -1.6, 0, 0])
+    # Inverse kinematics
+    q,err,it,eps = ikine_majager(xd, q0)
+
+    # Resulting position (end effector with respect to the base link)
+    T = fkine_majager(q)
+    print("\n")
+    print("Posición deseada: "+"X: "+str(xd[0])+", Y: "+str(xd[1])+", Z: "+str(xd[2]))
+    print('Obtained value:\n', np.round(T,3))
+    print('q:\n', np.round(q, 3))
+    print("\n")
+    # Red marker shows the achieved position
+    bmarker.xyz(T[0:3,3])
+    # Green marker shows the desired position
+    bmarker_des.xyz(xd)
+
+    # Objeto (mensaje) de tipo JointState
+    jstate = JointState()
+    # Asignar valores al mensaje
+    jstate.header.stamp = rospy.Time.now()
+    jstate.name = jnames
+    # Add the head joint value (with value 0) to the joints
+    q_2 = np.append(q, [0.03, 0.03])
+    jstate.position = q_2
+    # Loop rate (in Hz)
+    rate = rospy.Rate(100)
+
+
+    # Continuous execution loop
+    while not rospy.is_shutdown():
+        # Current time (needed for ROS)
+        jstate.header.stamp = rospy.Time.now()
+        # Publish the message
+        pub.publish(jstate)
+        bmarker.publish()
+        bmarker_des.publish()
+        # Wait for the next iteration
+        rate.sleep()
